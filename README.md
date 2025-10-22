@@ -337,20 +337,12 @@ AWSLambdaBasicExecutionRole
   AWSLambdaBasicExecutionRole – Allows Lambda to write logs to CloudWatch
 ```
 
-<br>
-
-#### 3. For Redshift (S3 access for COPY command):
-- Go to IAM → Roles → Create Role
-- Trusted entity: AWS service → Redshift
-- Attach policy: AmazonS3ReadOnlyAccess
-- Role name: redshift_firstassigned_s3_access_role
-- Attach to Redshift cluster
 
 <BR>
 <BR>
 
 ### Step iv: Set Up Lambda Functions
-<img wdith="800" height="300" src= "https://github.com/user-attachments/assets/93a35e70-2d69-494c-af32-7217b0178032">
+<img width="800" height="300" src= "https://github.com/user-attachments/assets/93a35e70-2d69-494c-af32-7217b0178032">
 
 #### 1. Create Lambda 1
 #### 1a. Create Lambda 1 Copy Function
@@ -392,7 +384,7 @@ def lambda_handler(event, context):
     # Define copy source
     copy_source = {'Bucket': source_bucket, 'Key': object_key}
     
-    # Wait for object to be available
+    # Wait for object to be available (optional but good practice)
     waiter = s3_client.get_waiter('object_exists')
     waiter.wait(Bucket=source_bucket, Key=object_key)
     
@@ -505,10 +497,19 @@ def lambda_handler(event, context):
     f = []
     for i in data["results"]:
         f.append(i)
-    
+
     # Convert to pandas DataFrame
     df = pd.DataFrame(f)
-    
+
+    # Define columns to keep (matching Redshift table)
+    columns_to_keep = [
+        'bathrooms', 'bedrooms', 'city', 'homeStatus', 'homeType',
+        'livingArea', 'price', 'rentZestimate', 'state', 'streetAddress', 'zipcode'
+    ]
+
+    # Filter DataFrame to only include needed columns
+    df = df.reindex(columns=columns_to_keep)
+
     # Convert DataFrame to CSV
     csv_data = df.to_csv(index=False)
     
@@ -654,40 +655,55 @@ from airflow.providers.standard.operators.bash import BashOperator
 from airflow.providers.amazon.aws.sensors.s3 import S3KeySensor
 from airflow.providers.amazon.aws.transfers.s3_to_redshift import S3ToRedshiftOperator
 
-# Load API credentials from config file
+
+
+#Load JSON config file
 with open('/home/ubuntu/airflow/config_api.json', 'r') as config_file:
     api_host_key = json.load(config_file)
+
 
 # Generate timestamp for file naming
 now = datetime.now()
 dt_now_string = now.strftime("%d%m%Y%H%M%S")
 
-# Define S3 bucket for transformed data
+
+# Define the S3 bucket for transformed data
 s3_bucket = 'first-assigned-transformed-bucket'
 
 
+
 def extract_zillow_data(**kwargs):
-    """Extract real estate data from Zillow API"""
+    """
+    Extracts real estate data from Zillow API and saves to JSON file
+    
+    Args:
+        **kwargs: Dictionary containing url, headers, querystring, date_string
+    
+    Returns:
+        List containing [json_file_path, csv_file_name]
+    """
+
     url = kwargs['url']
     headers = kwargs['headers']
     querystring = kwargs['querystring']
     dt_string = kwargs['date_string']
     
-    # Make API request
+    # Make the API/GET request
     response = requests.get(url, headers=headers, params=querystring)
     response_data = response.json()
 
-    # Define output file paths
+    # specify the output file path (JSON)
     output_file_path = f"/home/ubuntu/response_data_{dt_string}.json"
     file_str = f'response_data_{dt_string}.csv'
 
-    # Save JSON response to file
+    # Save the JSON response to a file
     with open(output_file_path, "w") as output_file:
-        json.dump(response_data, output_file, indent=4)
+        json.dump(response_data, output_file, indent=4)  # formatted
 
-    # Return paths for downstream tasks via XCom
+    # return paths for downstream tasks
     output_list = [output_file_path, file_str]
     return output_list
+
 
 
 # Default DAG configuration
@@ -703,22 +719,23 @@ default_args = {
 }    
 
 
-# Define the DAG
+
 with DAG(
     'zillow_analytics_dag',
-    default_args=default_args,
-    schedule='@daily',
-    catchup=False
+    default_args = default_args,
+    schedule = '@daily',
+    catchup = False
 ) as dag:
+
 
     # Task 1: Extract data from Zillow API
     extract_zillow_data_var = PythonOperator(
-        task_id='tsk_extract_zillow_data_var',
+        task_id= 'tsk_extract_zillow_data_var',
         python_callable=extract_zillow_data,
         op_kwargs={
             'url': 'https://zillow56.p.rapidapi.com/search', 
             'querystring': {
-                "location": "houston, tx",
+                "location":"houston, tx",
                 "output": "json",
                 "status": "forSale",
                 "sortSelection": "priorityscore",
@@ -730,11 +747,13 @@ with DAG(
         }
     )
 
+
     # Task 2: Upload JSON to S3 Landing Zone
     load_to_s3 = BashOperator(
         task_id='tsk_load_to_s3',
         bash_command='aws s3 mv {{ ti.xcom_pull("tsk_extract_zillow_data_var")[0] }} s3://first-assigned-bucket/'
     )
+
 
     # Task 3: Wait for CSV file to appear in transformed bucket
     is_file_in_s3_available = S3KeySensor(
@@ -747,7 +766,8 @@ with DAG(
         poke_interval=5,  # Check every 5 seconds
     )
 
-    # Task 4: Load CSV from S3 to Redshift
+
+    # Task 4: Transfer to Redshift
     transfer_s3_to_redshift = S3ToRedshiftOperator(
         task_id='tsk_transfer_s3_to_redshift',
         aws_conn_id='aws_s3_conn',
@@ -759,8 +779,11 @@ with DAG(
         copy_options=['csv IGNOREHEADER 1']
     )
 
-    # Define task execution order
-    extract_zillow_data_var >> load_to_s3 >> is_file_in_s3_available >> transfer_s3_to_redshift
+
+
+# Task order
+extract_zillow_data_var >> load_to_s3 >> is_file_in_s3_available >> transfer_s3_to_redshift
+
 ```
 
 - Create API config file: ~/airflow/config_api.json
@@ -771,5 +794,243 @@ with DAG(
     "x-rapidapi-host": "zillow56.p.rapidapi.com"
 }
 ```
+
+<br>
+<br>
+
+### Step 7: Redshift Setup
+#### Step 7.1: Create Redshift Cluster:
+- AWS Console → Search: Redshift
+- Redshift Console → Create cluster
+- Cluster identifier: redshift-cluster-1
+- Node type: dc2.large
+- Number of nodes: 1
+- Database name: dev
+- Database port: 5439 
+- Admin username: awsuserzillow
+- Admin password: (create strong password)
+- Create cluster
+
+<br>
+
+#### Step 7.2: Configure Security Group
+Allow Airflow and QuickSight to Connect:
+
+1. Go to Redshift Console → click `redshift-cluster-1`
+2. Properties tab → Network and security section
+3. Click on the VPC security group link
+4. Click Inbound rules tab → Edit inbound rules
+5. **Add 8 rules total** (1 for Airflow + 7 for QuickSight):
+6. Rule 1: Allow from EC2 (Airflow)
+```
+Type: Custom TCP
+Port: 5439
+Source: EC2 security group (sg-xxxxx) OR EC2 private IP
+Description: Airflow access
+```
+
+7. Rules 2-8: Allow from QuickSight (us-west-2 region)
+```
+Type: Custom TCP
+Port: 5439
+Source: 52.10.0.0/15
+Description: QuickSight access (1 of 7)
+
+Type: Custom TCP
+Port: 5439
+Source: 52.12.0.0/15
+Description: QuickSight access (2 of 7)
+
+Type: Custom TCP
+Port: 5439
+Source: 52.24.0.0/14
+Description: QuickSight access (3 of 7)
+
+Type: Custom TCP
+Port: 5439
+Source: 52.32.0.0/14
+Description: QuickSight access (4 of 7)
+
+Type: Custom TCP
+Port: 5439
+Source: 52.40.0.0/16
+Description: QuickSight access (5 of 7)
+
+Type: Custom TCP
+Port: 5439
+Source: 54.68.0.0/14
+Description: QuickSight access (6 of 7)
+
+Type: Custom TCP
+Port: 5439
+Source: 54.184.0.0/13
+Description: QuickSight access (7 of 7)
+```
+
+8. Click **Save rules**
+
+<br>
+
+#### Step 7.3: Create IAM Role for Redshift (S3 access for COPY command):
+- Go to IAM → Roles → Create Role
+- Trusted entity: AWS service → Redshift
+- Attach policy: AmazonS3ReadOnlyAccess
+- Role name: `redshift_firstassigned_s3_access_role`
+- Attach to Redshift cluster
+
+<br>
+
+#### Step 7.4: Attach IAM Role to Cluster
+- Go to Redshift Console → redshift-cluster-1
+- Click Actions → Manage IAM roles
+- Available IAM roles: Select `redshift_firstassigned_s3_access_role`
+- Click Associate IAM role → Click Save changes
+- Wait for status to show "In-sync" or "Active"
+
+<BR>
+<BR>
+
+### Step 8: Access Redshift Query Editor
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/c2d187f1-9097-4082-bbce-add18b98ca79" width="48%" height="300" style="object-fit:cover; margin-right:1%;">
+  <img src="https://github.com/user-attachments/assets/c37364dd-78d6-4459-b39e-39743e7a7161" width="48%" height="300" style="object-fit:cover;">
+</p>
+
+#### Step 8.1: Connect to Database:
+- Go to Redshift console → Query editor v2
+- Select cluster: `redshift-cluster-1`
+- Authentication:
+```
+Database name: dev
+User name
+Password
+```
+- Click Create connection
+
+<br>
+
+#### Step 8.2: Create Table in Query Editor v2
+In Query Editor v2, run this SQL:
+```
+CREATE TABLE IF NOT EXISTS zillowdata(
+    bathrooms NUMERIC,
+    bedrooms NUMERIC,
+    city VARCHAR(225),
+    homeStatus VARCHAR(225),
+    homeType VARCHAR(225),
+    livingArea NUMERIC,
+    price NUMERIC,
+    rentZestimate NUMERIC,
+    state VARCHAR(225),
+    streetAddress VARCHAR(225),
+    zipcode INT
+);
+```
+
+<br>
+
+#### Step 8.3: Verify Table Created
+```
+SELECT
+ *
+FROM zillowdata;
+```
+
+<br>
+
+#### Step 8.4: Create Redshift Connection in Airflow
+- Airflow UI → Admin → Connections
+- Click + (Add Connection)
+```
+Connection Id: conn_id_redshift
+Connection Type: Amazon Redshift
+Host (Get from Redshift console → Cluster → Endpoint, remove :5439/dev)
+Schema: dev
+Login: awsuserzillow
+Password
+Port: 5439
+Extra: {"region": "us-west-2"}
+```
+- Click Save
+
+<br>
+<br>
+
+### Step 9: Connect QuickSight to Redshift
+
+#### Step 9.1: Create QuickSight Account:
+- Go to QuickSight Console → Sign up (if first time)
+- Account name: `DavidAbe-firstassign`
+- Email: `************`
+- Region: **US West (Oregon)** (must match Redshift region)
+- Select **Standard** edition
+
+<BR>
+
+#### Step 9.2: Create Dataset:
+- QuickSight Console → Datasets → **New dataset**
+- Choose **Redshift** (Auto-discovered)
+- Configure connection:
+```
+   Data source name: `zillowdataset`
+   Database name: `dev`
+   Username: `awsuserzillow`
+   Password: (Redshift password)
+```
+- Validate connection → Create data source
+
+<BR>
+
+#### Step 9.3: Select Table:
+- Choose schema: `public`
+- Select table: `zillowdata`
+
+<BR>
+
+#### Step 9.4: Choose Query Mode:
+- Select **"Directly query your data"** (real-time queries)
+- Click **Visualize**
+
+<BR>
+  
+#### Step 9.5: Create QuickSight Dashboard
+<img height="400" alt="dashboard img" src="https://github.com/user-attachments/assets/1c1ab9f7-d2d7-458b-ab83-66757c0ab707" />
+
+**Build Interactive Visualizations:**
+
+- **KPIs** 
+   - Total Properties: 410 listings
+   - Median Price: $327.7K
+   - Most Expensive: $60.0M (luxury segment)
+   - Cheapest: $30.0K (entry-level)
+   - Price Per Sqft: $221.2
+
+- **Metrics Visualizations:**
+   - **A. Avg Price by Bedrooms (Vertical Bar Chart)**
+     - X-axis: Number of bedrooms (1-8)
+     - Y-axis: Average price
+     - **Insight:** 8-bedroom properties command ~$60M average, showing luxury market segment
+
+   - **B. Price vs Living Area (Scatter Plot)**
+     - X-axis: Living area (square footage)
+     - Y-axis: Property price
+     - **Insight:** Strong positive correlation between size and price
+     - Outlier detection: 8-bedroom, 220,000 sqft property priced at $600M (luxury mansion segment)
+
+  - **C. Properties by Home Type (Donut Chart)**
+     - Shows market distribution
+     - Single Family: 362 properties (88%)
+     - Townhouse: 37 properties (9%)
+     - Condo: 11 properties (3%)
+     - **Insight:** Single-family homes dominate Houston real estate market
+
+   - **D. Avg Price by City (Horizontal Bar Chart)**
+     - Compares average prices across Houston metro areas
+     - Houston city has the highest average Price(~$2.1M)
+     - While Stafford has the lowest average price
+     - **Insight:** Significant geographic price variation within metro area
+
+
+
 
 
