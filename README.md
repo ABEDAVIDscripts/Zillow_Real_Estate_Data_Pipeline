@@ -237,65 +237,70 @@ This project implements a production-grade, automated ETL pipeline that extracts
 <BR>
 <BR>
 
-### Step i: Infrastructure Setup
+### Step 1: Infrastructure Setup
 <img width="800" height="300" alt="ec2 instance" src="https://github.com/user-attachments/assets/fb350415-ee84-4d34-ae40-e08e746de247" />
 
-1. Launch EC2 instance (Ubuntu, t2.medium)
-2. SSH into instance:
+- Launch EC2 instance (Ubuntu, t2.medium)
+- SSH into instance:
 ```
 ssh -i your-key.pem ubuntu@your-ec2-ip
 ```
 
-3. Update system: <br>
+- Update system: <br>
 ```
 sudo apt update <br>
 sudo apt install python3-pip python3-venv -y
 ```
 
-4. Create virtual environment
+- Create virtual environment
 ```
 python3 -m venv firstassigned_env
 source firstassigned_env/bin/activate
 ```
 
-5. Install Airflow and providers
+- Install Airflow and providers
 ```
 pip install apache-airflow
 pip install apache-airflow-providers-amazon
 ```
 
-6. Install AWS CLI
+- Install AWS CLI
 ```
 sudo snap install aws-cli --classic
 ```
 
-7. Initialize Airflow databasee
+- Initialize Airflow databasee
 ```
 export AIRFLOW_HOME=~/airflow
 airflow db migrate
 ```
 
-8. Start Airflow Services in Separate Terminals
+- Start Airflow Services in Separate Terminals <br>
 Create 3 terminals using Screen for Session Persistence:
 
-- Terminal 1 - API Server
 ```
+#Terminal 1 - API Server
+
 screen -S airflow-api
 source firstassigned_env/bin/activate
 export AIRFLOW_HOME=~/airflow
 airflow api-server --port 8080
 ```
 
-- Terminal 2 - Scheduler
+
 ```
+#Terminal 2 - Scheduler
+
 screen -S airflow-scheduler
 source firstassigned_env/bin/activate
 export AIRFLOW_HOME=~/airflow
 airflow scheduler
 ```
 
-- Terminal 3 - DAG Processor
+
  ```
+#Terminal 3 - DAG Processor
+
 screen -S airflow-dag
 source firstassigned_env/bin/activate
 export AIRFLOW_HOME=~/airflow
@@ -305,7 +310,7 @@ airflow dag-processor
 <BR>
 <BR>
 
-### Step ii: Create S3 Buckets
+### Step 2: Create S3 Buckets
 <p align="center" style="display: flex; flex-direction: column; align-items: center;">
 
   <!-- Top Row -->
@@ -336,9 +341,9 @@ aws s3 mb s3://first-assigned-transformed-bucket --region us-west-2
 <BR>
 <BR>
 
-### Step iii: Set Up IAM Roles
+### Step 3: Set Up IAM Roles
 
-#### 1. For EC2 (Airflow access to S3):
+#### Step 3.1: For EC2 (Airflow access to S3):
 - Go to IAM → Roles → Create Role
 - Trusted entity: AWS service → EC2
 - Attach policy: AmazonS3FullAccess
@@ -347,7 +352,7 @@ aws s3 mb s3://first-assigned-transformed-bucket --region us-west-2
 
 <br>
 
-#### 2. For Lambda (S3 access + CloudWatch logs):
+#### Step 3.2: For Lambda (S3 access + CloudWatch logs):
 - Go to IAM → Roles → Create Role
 - Trusted entity: AWS service → Lambda
 - Attach policies:
@@ -366,11 +371,11 @@ AWSLambdaBasicExecutionRole
 <BR>
 <BR>
 
-### Step iv: Set Up Lambda Functions
+### Step 4: Set Up Lambda Functions
 <img width="800" height="300" src= "https://github.com/user-attachments/assets/93a35e70-2d69-494c-af32-7217b0178032">
 
-#### 1. Create Lambda 1
-#### 1a. Create Lambda 1 Copy Function
+#### Step 4.1: Create Lambda 1
+#### i: Create Lambda 1 Copy Function
 - Go to Lambda Console → Create Function → Author from scratch
 - Function name: CopyFirstAssignedJsonFile-LambdaFunction
 - Runtime: Python 3.10
@@ -382,7 +387,7 @@ select: lambda_function_s3_access_cloudwatch
 
 <br>
 
-#### 1b. Add S3 Trigger to Lambda (Automatically run Lambda when file lands in landing bucket)
+#### ii: Add S3 Trigger to Lambda (Automatically run Lambda when file lands in landing bucket)
 - Go to Lambda function page → Add trigger → Select a source: S3
 - Bucket: first-assigned-bucket
 - Event type: All object create events
@@ -391,7 +396,7 @@ select: lambda_function_s3_access_cloudwatch
 
 <br>
 
-#### 1c. Write Lambda 1 Code
+#### iii: Write Lambda 1 Code
 ```
 import boto3
 import json
@@ -424,7 +429,7 @@ def lambda_handler(event, context):
 
 <br>
 
-#### 1d. Adjust Lambda Timeout
+#### iv: Adjust Lambda Timeout
 Default timeout (3 seconds) might not be enough for larger files.
 - Go to Configuration tab → General configuration → Edit
 - Timeout: Change to 15 seconds
@@ -432,17 +437,17 @@ Default timeout (3 seconds) might not be enough for larger files.
 
 <br>
 
-#### 1e. Deploy Lambda Function
+#### v: Deploy Lambda Function
 
 <br>
 <br>
 
-#### 2. Lambda 2: Transform Function
+#### 4.2: Lambda 2: Transform Function
 Convert JSON to CSV format using Pandas for easier analytics and database loading.
 
 <br>
 
-#### 2a. Create Lambda Transform Function
+#### i: Create Lambda Transform Function
 - Go to Lambda Console → Create Function → Author from scratch
 - Function name: FirstAssignedTransformData-LambdaFunction
 - Runtime: Python 3.10
@@ -454,7 +459,7 @@ Use existing role: lambda_function_s3_access_cloudwatch
 
 <br>
 
-#### 2b. Add S3 Trigger
+#### ii: Add S3 Trigger
 - Click Add trigger → Source: S3
 - Bucket: copy-of-raw-jsonfile-bucket
 - Event type: All object create events
@@ -463,7 +468,7 @@ Use existing role: lambda_function_s3_access_cloudwatch
 
 <br>
 
-#### 2c. Add Pandas Layer to Lambda (Using ARN)
+#### iii: Add Pandas Layer to Lambda (Using ARN)
 Pandas is not included by default in Lambda 
 - Click Add a layer
 - Select Specify an ARN
@@ -475,7 +480,7 @@ arn:aws:lambda:us-west-2:336392948345:layer:AWSSDKPandas-Python310:26
 
 <br>
 
-#### 2d. Write Lambda Transform Code
+#### iv: Write Lambda Transform Code
 ```
 import boto3
 import json
@@ -554,7 +559,7 @@ def lambda_handler(event, context):
 
 <br>
 
-#### 2e. Increase Lambda Timeout
+#### v: Increase Lambda Timeout
 Pandas processing takes longer than simple copy operations.
 - Click Configuration tab → General configuration → Edit
 - Timeout: Change to 1 minute
@@ -562,17 +567,18 @@ Pandas processing takes longer than simple copy operations.
 
 <br>
 
-#### 2f. Deploy Lambda Function
+#### vi: Deploy Lambda Function
 
 <BR>
 <BR>
+<BR>
 
-### Step v. Add S3KeySensor for Monitoring
+### Step 5. Add S3KeySensor for Monitoring
 Purpose: Wait for CSV file to appear in transformed bucket before proceeding to next pipeline stage (loading to Redshift).
 
 <br>
 
-#### Step v.1: Install AWS Provider in Airflow
+#### Step 5.1: Install AWS Provider in Airflow
 - Connect to EC2 terminal:
 ```
 source firstassigned_env/bin/activate
@@ -582,7 +588,7 @@ pip install apache-airflow-providers-amazon
 
 <br>
 
-#### Step v.2: Restart Airflow Components
+#### Step 5.2: Restart Airflow Components
 Restart all 3 screen sessions to load new provider:
 
 - Restart API Server
@@ -617,7 +623,7 @@ airflow dag-processor
 
 <br>
 
-#### Step v.3: Create AWS Connection in Airflow
+#### Step 5.3: Create AWS Connection in Airflow
 - Go to Airflow UI: http://your-ec2-ip:8080
 - Click Admin → Connections → Add Connection
 - Fill in:
@@ -631,7 +637,7 @@ Extra: {"region_name": "us-west-2"}
 
 <br>
 
-#### Step v.4: Update DAG Code with S3KeySensor
+#### Step 5.4: Update DAG Code with S3KeySensor
 - Open zillowanalytics.py in VS Code and update:
 - Add new import:
 ```
@@ -667,7 +673,7 @@ extract_zillow_data_var >> load_to_s3 >> is_file_in_s3_available
 <BR>
 <BR>
 
-#### Step vi: Configure Airflow DAG in Visual Studio Code
+#### Step 6: Configure Airflow DAG in Visual Studio Code
 - Create file: ~/airflow/dags/zillowanalytics.py
 - Script:
 ```
@@ -841,12 +847,12 @@ extract_zillow_data_var >> load_to_s3 >> is_file_in_s3_available >> transfer_s3_
 #### Step 7.2: Configure Security Group
 Allow Airflow and QuickSight to Connect:
 
-1. Go to Redshift Console → click `redshift-cluster-1`
-2. Properties tab → Network and security section
-3. Click on the VPC security group link
-4. Click Inbound rules tab → Edit inbound rules
-5. **Add 8 rules total** (1 for Airflow + 7 for QuickSight):
-6. Rule 1: Allow from EC2 (Airflow)
+- Go to Redshift Console → click `redshift-cluster-1`
+- Properties tab → Network and security section
+- Click on the VPC security group link
+- Click Inbound rules tab → Edit inbound rules
+- **Add 8 rules total** (1 for Airflow + 7 for QuickSight):
+- Rule 1: Allow from EC2 (Airflow)
 ```
 Type: Custom TCP
 Port: 5439
@@ -854,7 +860,7 @@ Source: EC2 security group (sg-xxxxx) OR EC2 private IP
 Description: Airflow access
 ```
 
-7. Rules 2-8: Allow from QuickSight (us-west-2 region)
+- Rules 2-8: Allow from QuickSight (us-west-2 region)
 ```
 Type: Custom TCP
 Port: 5439
@@ -892,7 +898,7 @@ Source: 54.184.0.0/13
 Description: QuickSight access (7 of 7)
 ```
 
-8. Click **Save rules**
+- Save rules
 
 <br>
 
@@ -914,6 +920,7 @@ Description: QuickSight access (7 of 7)
 
 <BR>
 <BR>
+<br>
 
 ### Step 8: Access Redshift Query Editor
 <p align="center">
@@ -930,7 +937,7 @@ Database name: dev
 User name
 Password
 ```
-- Click Create connection
+- Create connection
 
 <br>
 
@@ -965,7 +972,7 @@ FROM zillowdata;
 
 #### Step 8.4: Create Redshift Connection in Airflow
 - Airflow UI → Admin → Connections
-- Click + (Add Connection)
+- Add Connection
 ```
 Connection Id: conn_id_redshift
 Connection Type: Amazon Redshift
@@ -976,7 +983,7 @@ Password
 Port: 5439
 Extra: {"region": "us-west-2"}
 ```
-- Click Save
+- Save
 
 <br>
 <br>
@@ -993,8 +1000,8 @@ Extra: {"region": "us-west-2"}
 <BR>
 
 #### Step 9.2: Create Dataset:
-- QuickSight Console → Datasets → **New dataset**
-- Choose **Redshift** (Auto-discovered)
+- QuickSight Console → Datasets → New dataset
+- Redshift (Auto-discovered)
 - Configure connection:
 ```
    Data source name: `zillowdataset`
@@ -1012,13 +1019,8 @@ Extra: {"region": "us-west-2"}
 
 <BR>
 
-#### Step 9.4: Choose Query Mode:
-- Select **"Directly query your data"** (real-time queries)
-- Click **Visualize**
-
-<BR>
   
-#### Step 9.5: Create QuickSight Dashboard
+#### Step 9.4: Create QuickSight Dashboard
 <img height="400" alt="dashboard img" src="https://github.com/user-attachments/assets/1c1ab9f7-d2d7-458b-ab83-66757c0ab707" />
 
 **Build Interactive Visualizations:**
