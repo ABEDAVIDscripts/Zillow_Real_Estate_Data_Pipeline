@@ -1,7 +1,3 @@
-<h1 align="center">Project Workflow and Key Features</h1>
-
-
-<BR>
 
 ## Project Workflow
 
@@ -11,23 +7,25 @@
 
 <br>
 
-### Phase i: Data Extraction
+#### Phase i: Data Extraction
 1. Airflow Task 1 (tsk_extract_zillow_data_var) calls Zillow API via RapidAPI
 2. Filters for Houston, TX properties with status "FOR_SALE"
 3. Saves raw JSON response with timestamp to EC2
 
 <br>
+<br>
 
 <img width="800" height="300" src="https://github.com/user-attachments/assets/9f658101-2ce6-4977-a6c0-8cd4b2b81ab6">
 
 
-### Phase ii: Data Loading
+#### Phase ii: Data Loading
 4. Airflow Task 2 (tsk_load_to_s3) moves JSON to S3 landing bucket
 5. S3 Event Trigger invokes Lambda 1 automatically
 
 <br>
+<br>
 
-### Phase iii: Data Transformation
+#### Phase iii: Data Transformation
 
 <div align="center">
   <img src="https://github.com/user-attachments/assets/b5da08d5-fde7-4474-bd8e-d76a44c1f0a4" width="45%">
@@ -73,14 +71,16 @@
 
 
 <br>
+<br>
 
-### Phase iv: Data Warehousing
+#### Phase iv: Data Warehousing
 9. Airflow Task 3 (tsk_is_file_in_s3_available) monitors for CSV availability
 10. Airflow Task 4 (tsk_transfer_s3_to_redshift) loads CSV into Redshift table
 
 <br>
+<br>
 
-### Phase v: Airflow DAG/Tasks
+#### Phase v: Airflow DAG/Tasks
 
 <div align="center">
 
@@ -103,9 +103,11 @@
   </div>
 
 </div>
+
+<br>
 <br>
 
-### Phase vi: Visualization
+#### Phase vi: Visualization
 11. QuickSight connects to Amazon Redshift using Direct Query for real-time visualization and analysis
 12. Interactive dashboard provides real-time market insights
 
@@ -113,9 +115,9 @@
 <br>
 <br>
 
-## Key Features
+## Key Features 
 
-### Automated Pipeline
+#### i: Automated Pipeline
 - Scheduled Execution: Daily runs at midnight (@daily schedule)
 - Event-Driven: S3 triggers automatically invoke Lambda functions
 - Self-Healing: 2 retry attempts with 15-second delays on failures
@@ -123,7 +125,7 @@
 
 <br>
 
-### Serverless Transformation
+#### ii: Serverless Transformation
 - Cost-Effective: Pay only for Lambda execution time
 - Scalable: Auto-scales with data volume
 - Maintainable: No server management required
@@ -131,7 +133,7 @@
 
 <br>
 
-### Data Quality
+#### iii: Data Quality
 - Column Filtering: Reduces 40+ columns to 11 essential fields
 - Schema Validation: Ensures CSV matches Redshift table structure
 - Error Handling: Comprehensive logging via CloudWatch
@@ -139,7 +141,7 @@
 
 <br>
 
-### Business Intelligence
+#### iv: Business Intelligence
 - 5 KPI Metrics: Total properties, median price, price range, price/sqft
 - 4 Visualization Types: Bar charts, scatter plots, donut charts, horizontal bars
 - Real-Time Updates: Live connection with Direct Query for always up-to-date property insights
@@ -148,4 +150,5 @@
 <br>
 <br>
 <br>
+
 
