@@ -20,6 +20,7 @@
   - [Step 8: Access Redshift Query Editor](#step-8-access-redshift-query-editor)
   - [Step 9: Connect QuickSight to Redshift](#step-9-connect-quickSight-to-redshift)
   - [Step 10: Create QuickSight Dashboard](#step-10-create-quickSight-dashboard)
+- [Challenges and Solutions](#challenges-and-solutions)
 
 
 <br>
@@ -1091,7 +1092,7 @@ Extra: {"region": "us-west-2"}
 <BR>
 <BR>
 
-## Challenges & Solutions
+## Challenges and Solutions
 
 #### i. Challenge 1: Lambda Pandas Dependency
 - Problem: Pandas not available in AWS Lambda runtime
