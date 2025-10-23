@@ -218,7 +218,6 @@ This project implements a production-grade, automated ETL pipeline that extracts
 ### Business Intelligence
 - 5 KPI Metrics: Total properties, median price, price range, price/sqft
 - 4 Visualization Types: Bar charts, scatter plots, donut charts, horizontal bars
-- Interactive Filters: City, price range, bedrooms, home type
 - Real-Time Updates: Live connection with Direct Query for always up-to-date property insights
 
 
@@ -633,7 +632,7 @@ Connection Type: Amazon Web Services
 Leave AWS Access Key and Secret blank (using IAM role)
 Extra: {"region_name": "us-west-2"}
 ```
-- Click Save
+- Save
 
 <br>
 
