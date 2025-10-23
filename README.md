@@ -2,7 +2,7 @@
 
 <br>
 
-#### Table of Contents
+#### Project Structure
 
 - [Project Overview](#overview)
 - [Architecture](#architecture)
