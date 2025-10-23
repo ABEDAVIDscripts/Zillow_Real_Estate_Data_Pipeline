@@ -9,7 +9,7 @@
 - [Technologies Used](#technologies-used)
 - [Project Workflow](#project-workflow)
 - [Key Features](#key-features)
-- [Setup & Installation](#setup-&-installation)
+- [Setup & Installation](#setup-and-installation)
   - [Step 1: Infrastructure Setup](#step-1-infrastructure-setup)
   - [Step 2: Create S3 Buckets](#step-2-create-s3-buckets)
   - [Step 3: Set Up IAM Roles](#step-3-set-up-iam-roles)
@@ -247,7 +247,7 @@ This project implements a production-grade, automated ETL pipeline that extracts
 <br>
 <br>
 
-## Setup & Installation
+## Setup and Installation
 
 ### Prerequisites
 - AWS Account with admin access
