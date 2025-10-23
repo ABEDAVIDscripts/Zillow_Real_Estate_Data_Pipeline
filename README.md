@@ -156,7 +156,32 @@ This project implements a production-grade, automated ETL pipeline that extracts
 
 <br>
 
-### Phase v: Visualization
+### Phase v: Airflow DAG/Tasks
+
+<div align="center">
+
+  <!-- Row 1 -->
+  <div>
+    <img src="https://github.com/user-attachments/assets/1e219da2-e81d-44f6-8aae-59718a11bfc9" width="40%">
+    <img src="https://github.com/user-attachments/assets/b4f3da44-9a67-40e7-8073-ab2c36d40014" width="40%">
+  </div>
+
+  <!-- Row 2 -->
+  <div>
+    <img src="https://github.com/user-attachments/assets/65e93a62-f9d0-4198-a2b0-4de3794a5291" width="40%">
+    <img src="https://github.com/user-attachments/assets/862c1f6e-80ae-4b40-b22a-8eff480c8140" width="40%">
+  </div>
+
+  <!-- Row 3 -->
+  <div>
+    <img src="https://github.com/user-attachments/assets/bddb3876-f72f-495b-9db1-39252db4b5b4" width="40%">
+    <img src="https://github.com/user-attachments/assets/a27c7e22-8a55-4599-a255-0954554cffeb" width="40%">
+  </div>
+
+</div>
+<br>
+
+### Phase vi: Visualization
 11. QuickSight connects to Amazon Redshift using Direct Query for real-time visualization and analysis
 12. Interactive dashboard provides real-time market insights
 
