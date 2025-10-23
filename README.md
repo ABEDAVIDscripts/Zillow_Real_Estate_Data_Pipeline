@@ -225,7 +225,7 @@ This project implements a production-grade, automated ETL pipeline that extracts
 <br>
 <br>
 
-## Setup & Installation
+## Installation & Setup 
 
 ### Prerequisites
 - AWS Account with admin access
