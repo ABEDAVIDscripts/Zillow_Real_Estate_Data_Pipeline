@@ -14,7 +14,7 @@
   - [Step 2: Create S3 Buckets](#step-2-create-s3-buckets)
   - [Step 3: Set Up IAM Roles](#step-3-set-up-iam-roles)
   - [Step 4: Set Up Lambda Functions](#step-4-set-up-lambda-functions)
-  - [Step 5: Add S3KeySensor for Monitoring](#Step 5-add-s3keysensor-for-monitoring)
+  - [Step 5: Add S3KeySensor for Monitoring](#step-5-add-s3keysensor-for-monitoring)
   - [Step 6: Configure Airflow DAG in Visual Studio Code](#step-6-configure-airflow-dag-in-visual-studio-code)
   - [Step 7: Redshift Setup](#step-7-redshift-setup)
   - [Step 8: Access Redshift Query Editor](#step-8-access-redshift-query-editor)
