@@ -2,6 +2,28 @@
 
 <br>
 
+#### Table of Contents
+
+- [Project Overview](#overview)
+- [Architecture](#architecture)
+- [Technologies Used](#technologies-used)
+- [Project Workflow](#project-workflow)
+- [Key Features](#key-features)
+- [Setup & Installation](#setup-&-installation )
+  - [Step 1: Infrastructure Setup](#step-1-infrastructure-setup)
+  - [Step 2: Create S3 Buckets](#step-2-create-s3-buckets)
+  - [Step 3: Set Up IAM Roles](#step-3-set-up-iam-roles)
+  - [Step 4: Set Up Lambda Functions](#step-4-set-up-lambda-functions)
+  - [Step 5: Add S3KeySensor for Monitoring](#Step 5-add-s3keysensor-for-monitoring)
+  - [Step 6: Configure Airflow DAG in Visual Studio Code](#step-6-configure-airflow-dag-in-visual-studio-code)
+  - [Step 7: Redshift Setup](#step-7-redshift-setup)
+  - [Step 8: Access Redshift Query Editor](#step-8-access-redshift-query-editor)
+  - [Step 9: Connect QuickSight to Redshift](#step-9-connect-quickSight-to-redshift)
+  - [Step 10: Create QuickSight Dashboard](#step-10-create-quickSight-dashboard)
+
+
+<br>
+
 ### Overview
 This project implements a production-grade, automated ETL pipeline that extracts Houston real estate listings from the Zillow API, transforms the data using serverless AWS Lambda functions, loads it into a Redshift data warehouse, and visualizes insights through interactive QuickSight dashboards.
 
@@ -225,7 +247,7 @@ This project implements a production-grade, automated ETL pipeline that extracts
 <br>
 <br>
 
-## Installation & Setup 
+## Setup & Installation
 
 ### Prerequisites
 - AWS Account with admin access
@@ -308,6 +330,7 @@ airflow dag-processor
 
 <BR>
 <BR>
+<br>
 
 ### Step 2: Create S3 Buckets
 <p align="center" style="display: flex; flex-direction: column; align-items: center;">
@@ -339,6 +362,7 @@ aws s3 mb s3://first-assigned-transformed-bucket --region us-west-2
 
 <BR>
 <BR>
+<br>
 
 ### Step 3: Set Up IAM Roles
 
@@ -369,6 +393,7 @@ AWSLambdaBasicExecutionRole
 
 <BR>
 <BR>
+<br>
 
 ### Step 4: Set Up Lambda Functions
 <img width="800" height="300" src= "https://github.com/user-attachments/assets/93a35e70-2d69-494c-af32-7217b0178032">
@@ -572,7 +597,7 @@ Pandas processing takes longer than simple copy operations.
 <BR>
 <BR>
 
-### Step 5. Add S3KeySensor for Monitoring
+### Step 5: Add S3KeySensor for Monitoring
 Purpose: Wait for CSV file to appear in transformed bucket before proceeding to next pipeline stage (loading to Redshift).
 
 <br>
@@ -671,8 +696,9 @@ extract_zillow_data_var >> load_to_s3 >> is_file_in_s3_available
 
 <BR>
 <BR>
+<BR>
 
-#### Step 6: Configure Airflow DAG in Visual Studio Code
+### Step 6: Configure Airflow DAG in Visual Studio Code
 - Create file: ~/airflow/dags/zillowanalytics.py
 - Script:
 ```
@@ -827,6 +853,7 @@ extract_zillow_data_var >> load_to_s3 >> is_file_in_s3_available >> transfer_s3_
 
 <br>
 <br>
+<BR>
 
 ### Step 7: Redshift Setup
 #### Step 7.1: Create Redshift Cluster:
@@ -986,6 +1013,7 @@ Extra: {"region": "us-west-2"}
 
 <br>
 <br>
+<BR>
 
 ### Step 9: Connect QuickSight to Redshift
 
@@ -1017,9 +1045,11 @@ Extra: {"region": "us-west-2"}
 - Select table: `zillowdata`
 
 <BR>
+<BR>
+<BR>
 
   
-#### Step 9.4: Create QuickSight Dashboard
+### Step 10: Create QuickSight Dashboard
 <img height="400" alt="dashboard img" src="https://github.com/user-attachments/assets/1c1ab9f7-d2d7-458b-ab83-66757c0ab707" />
 
 **Build Interactive Visualizations:**
@@ -1057,6 +1087,6 @@ Extra: {"region": "us-west-2"}
      - **Insight:** Significant geographic price variation within metro area
 
 
-
+<BR>
 
 
