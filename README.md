@@ -1126,3 +1126,11 @@ Extra: {"region": "us-west-2"}
 
 <br>
 <br>
+
+
+**Note:** This project infrastructure has been decommissioned to avoid AWS costs
+
+<br>
+<BR>
+
+Thank You for Reading
