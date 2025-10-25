@@ -376,10 +376,19 @@ aws s3 mb s3://first-assigned-transformed-bucket --region us-west-2
 #### ii: S3 Event Notifications
 The pipeline uses S3 event notifications to automatically trigger Lambda functions, creating a fully automated serverless workflow.
 
-- Trigger 1: first-assigned-bucket
+- Trigger 1: first-assigned-bucket <br>
   `Lambda Function: CopyFirstAssignedJsonFile-LambdaFunction` <BR>
+<img width="500" alt="firstassigned bucket event notifcation" src="https://github.com/user-attachments/assets/fe332c18-39b2-4902-9278-fa8ecf738bfd" />  <BR>
+
 
 When Airflow uploads JSON files to `first-assigned-bucket`, S3 automatically triggers the Copy Lambda function to replicate the file to the intermediate bucket.
+
+<BR>
+
+- Trigger 2: copy-of-raw-jsonfile-bucket <br>
+`Lambda Function: FirstAssignedTransformData-LambdaFunction` <br>
+
+When the Copy Lambda writes to `copy-of-raw-jsonfile-bucket`, S3 automatically triggers the Transform Lambda function to convert JSON to CSV and filter columns.
 
 
 <BR>
