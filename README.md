@@ -333,33 +333,54 @@ airflow dag-processor
 <BR>
 <br>
 
-### Step 2: Create S3 Buckets
-<p align="center" style="display: flex; flex-direction: column; align-items: center;">
-
-  <!-- Top Row -->
-  <span>
-    <img src="https://github.com/user-attachments/assets/6660f350-c71f-4a93-9b71-4f39c99a71be" width="48%" height="280" style="object-fit:cover; margin-right:1%;">
-    <img src="https://github.com/user-attachments/assets/cedf6215-a059-4003-878c-0ff341ecdaaa" width="48%" height="280" style="object-fit:cover;">
-  </span>
-
+### Step 2: 
+#### i: Create S3 Buckets
+<p>
+  <!--all buckets -->
+    <img src="https://github.com/user-attachments/assets/6660f350-c71f-4a93-9b71-4f39c99a71be" width="400" >
+</p>
+ 
   <br>
 
-  <!-- Bottom Row -->
-  <span>
-    <img src="https://github.com/user-attachments/assets/56f82303-7eb8-453f-b028-021c28ecd8f7" width="48%" height="280" style="object-fit:cover; margin-right:1%;">
-    <img src="https://github.com/user-attachments/assets/4f4b6c21-9de9-44c7-8d33-2bb7e8db6f67" width="48%" height="280" style="object-fit:cover;">
-  </span>
+- Bucket 1: `first-assigned-bucket`
+<p>
+    <img src="https://github.com/user-attachments/assets/cedf6215-a059-4003-878c-0ff341ecdaaa" width="400" >
+</p>
 
+<br>
+
+- Bucket 2: `copy-of-raw-jsonfile-bucket`
+<p>
+    <img src="https://github.com/user-attachments/assets/56f82303-7eb8-453f-b028-021c28ecd8f7" width="400" >
+</p>
+
+<br>
+
+- Bucket 3: `first-assigned-transformed-bucket`
+
+<p>
+    <img src="https://github.com/user-attachments/assets/4f4b6c21-9de9-44c7-8d33-2bb7e8db6f67" width="400" >
 </p>
 
 
 
-Create three buckets in us-west-2 region
+The 3 buckets created in us-west-2 region
 ```
 aws s3 mb s3://first-assigned-bucket --region us-west-2
 aws s3 mb s3://copy-of-raw-jsonfile-bucket --region us-west-2
 aws s3 mb s3://first-assigned-transformed-bucket --region us-west-2
 ```
+
+<br>
+
+#### ii: S3 Event Notifications
+The pipeline uses S3 event notifications to automatically trigger Lambda functions, creating a fully automated serverless workflow.
+
+- Trigger 1: first-assigned-bucket
+  `Lambda Function: CopyFirstAssignedJsonFile-LambdaFunction` <BR>
+
+When Airflow uploads JSON files to `first-assigned-bucket`, S3 automatically triggers the Copy Lambda function to replicate the file to the intermediate bucket.
+
 
 <BR>
 <BR>
