@@ -377,16 +377,20 @@ aws s3 mb s3://first-assigned-transformed-bucket --region us-west-2
 The pipeline uses S3 event notifications to automatically trigger Lambda functions, creating a fully automated serverless workflow.
 
 - Trigger 1: first-assigned-bucket <br>
-  `Lambda Function: CopyFirstAssignedJsonFile-LambdaFunction` <BR>
-<img width="500" alt="firstassigned bucket event notifcation" src="https://github.com/user-attachments/assets/fe332c18-39b2-4902-9278-fa8ecf738bfd" />  <BR>
+  `Lambda Function: CopyFirstAssignedJsonFile-LambdaFunction`
 
+  <BR>
+<img width="500" alt="firstassigned bucket event notifcation" src="https://github.com/user-attachments/assets/fe332c18-39b2-4902-9278-fa8ecf738bfd" />  <BR>
 
 When Airflow uploads JSON files to `first-assigned-bucket`, S3 automatically triggers the Copy Lambda function to replicate the file to the intermediate bucket.
 
 <BR>
 
 - Trigger 2: copy-of-raw-jsonfile-bucket <br>
-`Lambda Function: FirstAssignedTransformData-LambdaFunction` <br>
+`Lambda Function: FirstAssignedTransformData-LambdaFunction`
+
+<br>
+<img width="500" alt="copyofrawjsonfile bucket event notification" src="https://github.com/user-attachments/assets/be2357ce-cf4e-4589-b281-65ff61737f71" /> <BR>
 
 When the Copy Lambda writes to `copy-of-raw-jsonfile-bucket`, S3 automatically triggers the Transform Lambda function to convert JSON to CSV and filter columns.
 
@@ -683,6 +687,8 @@ airflow dag-processor
 <br>
 
 #### Step 5.3: Create AWS Connection in Airflow
+<img width="500" alt="Airflow Connections Configuration (aws_s3_conn) 2" src="https://github.com/user-attachments/assets/c8d4012b-b5b2-4552-a037-6d5c639dc0f4" />
+
 - Go to Airflow UI: http://your-ec2-ip:8080
 - Click Admin → Connections → Add Connection
 - Fill in:
@@ -1032,6 +1038,11 @@ FROM zillowdata;
 <br>
 
 #### Step 8.4: Create Redshift Connection in Airflow
+<p align="center">
+<img width="45%" alt="Airflow Connections Configuration (conn_id_redshift)" src="https://github.com/user-attachments/assets/67dcacc4-2346-4cd2-b9c2-35e69ece34ea" />
+<img width="45%" alt="Airflow Connections Configuration (conn_id_redshift) 2" src="https://github.com/user-attachments/assets/a508ab79-f7c6-4fc0-b88d-def52001e975" />
+</p>
+
 - Airflow UI → Admin → Connections
 - Add Connection
 ```
