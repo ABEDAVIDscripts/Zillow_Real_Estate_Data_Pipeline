@@ -455,6 +455,8 @@ def lambda_handler(event, context):
 <br>
 
 #### iv: Adjust Lambda Timeout
+<img width="600" alt="Lambda Copy Function Configuration " src="https://github.com/user-attachments/assets/4f1074ab-53b4-4a00-a6ea-5dedb34ba191" />
+
 Default timeout (3 seconds) might not be enough for larger files.
 - Go to Configuration tab → General configuration → Edit
 - Timeout: Change to 15 seconds
@@ -585,6 +587,8 @@ def lambda_handler(event, context):
 <br>
 
 #### v: Increase Lambda Timeout
+<img width="600"  alt="Lambda Transform Function Configuration " src="https://github.com/user-attachments/assets/1ec6d45f-9b64-4926-afdf-918361e334f2" />
+
 Pandas processing takes longer than simple copy operations.
 - Click Configuration tab → General configuration → Edit
 - Timeout: Change to 1 minute
