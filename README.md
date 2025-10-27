@@ -337,21 +337,21 @@ airflow dag-processor
 #### i: Create S3 Buckets
 <p>
   <!--all buckets -->
-    <img src="https://github.com/user-attachments/assets/6660f350-c71f-4a93-9b71-4f39c99a71be" width="400" >
+    <img src="https://github.com/user-attachments/assets/6660f350-c71f-4a93-9b71-4f39c99a71be" width="600" >
 </p>
  
   <br>
 
 - Bucket 1: `first-assigned-bucket`
 <p>
-    <img src="https://github.com/user-attachments/assets/cedf6215-a059-4003-878c-0ff341ecdaaa" width="400" >
+    <img src="https://github.com/user-attachments/assets/cedf6215-a059-4003-878c-0ff341ecdaaa" width="600" >
 </p>
 
 <br>
 
 - Bucket 2: `copy-of-raw-jsonfile-bucket`
 <p>
-    <img src="https://github.com/user-attachments/assets/56f82303-7eb8-453f-b028-021c28ecd8f7" width="400" >
+    <img src="https://github.com/user-attachments/assets/56f82303-7eb8-453f-b028-021c28ecd8f7" width="600" >
 </p>
 
 <br>
@@ -359,7 +359,7 @@ airflow dag-processor
 - Bucket 3: `first-assigned-transformed-bucket`
 
 <p>
-    <img src="https://github.com/user-attachments/assets/4f4b6c21-9de9-44c7-8d33-2bb7e8db6f67" width="400" >
+    <img src="https://github.com/user-attachments/assets/4f4b6c21-9de9-44c7-8d33-2bb7e8db6f67" width="600" >
 </p>
 
 
@@ -376,23 +376,31 @@ aws s3 mb s3://first-assigned-transformed-bucket --region us-west-2
 #### ii: S3 Event Notifications
 The pipeline uses S3 event notifications to automatically trigger Lambda functions, creating a fully automated serverless workflow.
 
-- Trigger 1: first-assigned-bucket <br>
-  `Lambda Function: CopyFirstAssignedJsonFile-LambdaFunction`
+- Event 1: Landing Zone Trigger <br>
 
-  <BR>
-<img width="500" alt="firstassigned bucket event notifcation" src="https://github.com/user-attachments/assets/fe332c18-39b2-4902-9278-fa8ecf738bfd" />  <BR>
-
-When Airflow uploads JSON files to `first-assigned-bucket`, S3 automatically triggers the Copy Lambda function to replicate the file to the intermediate bucket.
+<img width="600" alt="firstassigned bucket event notifcation" src="https://github.com/user-attachments/assets/fe332c18-39b2-4902-9278-fa8ecf738bfd" />  <BR>
+```
+Source Bucket: first-assigned-bucket
+Event Type: All object create events 
+Lambda Function: CopyFirstAssignedJsonFile-LambdaFunction
+```
+  
+When Airflow uploads JSON files to `first-assigned-bucket`, S3 automatically invokes the Copy Lambda function to replicate the file to the intermediate bucket.
 
 <BR>
 
-- Trigger 2: copy-of-raw-jsonfile-bucket <br>
-`Lambda Function: FirstAssignedTransformData-LambdaFunction`
+- Event 2: Intermediate Zone Trigger <br>
 
-<br>
-<img width="500" alt="copyofrawjsonfile bucket event notification" src="https://github.com/user-attachments/assets/be2357ce-cf4e-4589-b281-65ff61737f71" /> <BR>
+<img width="600" alt="copyofrawjsonfile bucket event notification" src="https://github.com/user-attachments/assets/be2357ce-cf4e-4589-b281-65ff61737f71" /> <BR>
+```
+Source Bucket: copy-of-raw-jsonfile-bucket
+Event Type: All object create events 
+Lambda Function: FirstAssignedTransformData-LambdaFunction
+```
 
-When the Copy Lambda writes to `copy-of-raw-jsonfile-bucket`, S3 automatically triggers the Transform Lambda function to convert JSON to CSV and filter columns.
+When the Copy Lambda writes to `copy-of-raw-jsonfile-bucket`, S3 automatically invokes the Transform Lambda function to convert JSON to CSV and filter columns.
+
+
 
 
 <BR>
@@ -488,7 +496,7 @@ def lambda_handler(event, context):
 
 <br>
 
-#### iv: Adjust Lambda Timeout
+#### iv: Lambda Configuration (Adjust Lambda Timeout)
 <img width="600" alt="Lambda Copy Function Configuration " src="https://github.com/user-attachments/assets/4f1074ab-53b4-4a00-a6ea-5dedb34ba191" />
 
 Default timeout (3 seconds) might not be enough for larger files.
@@ -620,7 +628,7 @@ def lambda_handler(event, context):
 
 <br>
 
-#### v: Increase Lambda Timeout
+#### v: Lambda Configuration (Increase Lambda Timeout)
 <img width="600"  alt="Lambda Transform Function Configuration " src="https://github.com/user-attachments/assets/1ec6d45f-9b64-4926-afdf-918361e334f2" />
 
 Pandas processing takes longer than simple copy operations.
@@ -913,6 +921,8 @@ extract_zillow_data_var >> load_to_s3 >> is_file_in_s3_available >> transfer_s3_
 
 #### Step 7.2: Configure Security Group
 Allow Airflow and QuickSight to Connect:
+
+<img width="600" src="https://github.com/user-attachments/assets/5ec8ffa2-abfb-49ad-94e4-eee002b29303" />
 
 - Go to Redshift Console → click `redshift-cluster-1`
 - Properties tab → Network and security section
